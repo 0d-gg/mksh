@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# mksh
+# pmood
+# 
+# Generates a bash script from a standard template with some basic functions.
+# https://github.com/pmood/mksh
+# -----------------------------------------------------------------------------
+VERSION=1.0
+USAGE="Usage: mksh -hv"
+
+main(){
+  loc="$0"
+  # need this for relative symlinks
+  while [ -h "$loc" ] ; do
+    loc=`readlink "$loc"`
+  done
+  loc=`dirname "$loc"`
+  template="$loc/templ.txt"
+  while [[ "$name" == '' ]]; do
+    prompt "What's the name of the script?"
+    read name
+    if [ -e "$name" ]; then
+      err "That file ($(pwd)/$name) already exists."
+      name=''
+    fi
+    if [[ "$name" == *\/* ]]; then
+      err "Try again. This time, without '/'."
+      name=''
+    fi
+  done
+  prompt "Who made it?"
+  read author
+  prompt "What does it do?"
+  read description
+
+  if [ -e "$name" ]; then
+    err "Looks like someone literally just made $(pwd)/$name."
+    exit 1
+  else
+    cp -n "$template" $(pwd)/"$name"
+    if [ $? != 0 ]; then
+      err "Copy failed. Is there a problem with $(pwd)/$template?"
+      exit 1
+    fi
+  fi
+
+  nfo "Created $(pwd)/$name."
+  chmod +x "$name"
+  # replace ^NAME^ in template with filename
+  sed -i -e "s/\^NAME\^/$name/g" "$name"
+  # replace ^AUTHOR^ with author (if provided)
+  if [[ $author != '' ]]; then
+    sed -i -e "s/\^AUTHOR\^/$author/g" "$name"
+  fi
+  # replace ^DESCRIPTION^ with description (if provided)
+  if [[ $description != '' ]]; then
+    sed -i -e "s/\^DESCRIPTION\^/$description/g" "$name"
+  fi
+
+  nfo "There. It's done."
+}
+
+# prints an informational message
+nfo(){
+  echo -e "$(GRN)[-]$(RST) $@" >&2
+}
+
+# prints an error message
+err(){
+  echo -e "$(RED)[!]$(RST) $@" >&2
+}
+
+# prints a warning message
+wrn(){
+  echo -e "$(YLW)[~]$(RST) $@" >&2
+}
+
+# prompts user for input
+prompt(){
+  echo -n -e "$(BLU)[?]$(RST) $@ " >&2
+}
+
+# colors
+RST(){ tput sgr0; }
+BLK(){ tput setaf 0; }
+RED(){ tput setaf 1; }
+GRN(){ tput setaf 2; }
+YLW(){ tput setaf 3; }
+BLU(){ tput setaf 4; }
+PNK(){ tput setaf 5; }
+CYN(){ tput setaf 6; }
+WHT(){ tput setaf 7; }
+
+while getopts ":hv" option; do
+  case $option in
+    h) nfo "$USAGE"; exit ;;
+    v) nfo "Version: $VERSION"; exit ;;
+    ?) err "$USAGE"; exit ;;
+  esac
+done
+main "$@"

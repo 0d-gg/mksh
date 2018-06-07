@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# ^NAME^
+# ^AUTHOR^
+# ^DESCRIPTION^
+# ------------------------------------------------------------------
+VERSION=0.1
+USAGE="Usage: ^NAME^ -hvx args"
+x_flag=
+
+main(){
+  # START HERE
+  foo
+}
+
+# prints an informational message
+nfo(){
+  echo -e "$(GRN)[-]$(RST) $@" >&2
+}
+
+# prints an error message
+err(){
+  echo -e "$(RED)[!]$(RST) $@" >&2
+}
+
+# prints a warning message
+wrn(){
+  echo -e "$(YLW)[~]$(RST) $@" >&2
+}
+
+# prompts user for input
+prompt(){
+  echo -n -e "$(BLU)[?]$(RST) $@ " >&2
+}
+
+# colors
+RST(){ tput sgr0; }
+BLK(){ tput setaf 0; }
+RED(){ tput setaf 1; }
+GRN(){ tput setaf 2; }
+YLW(){ tput setaf 3; }
+BLU(){ tput setaf 4; }
+PNK(){ tput setaf 5; }
+CYN(){ tput setaf 6; }
+WHT(){ tput setaf 7; }
+
+# example function
+foo(){
+  wrn "Function not yet implemented."
+}
+
+while getopts ":hvx" option; do
+  case $option in
+    h) nfo "$USAGE"; exit ;;
+    v) nfo "Version: $VERSION"; exit ;;
+    x) x_flag=true ;; # example flag to set
+    ?) err "$USAGE"; exit ;;
+  esac
+done
+main "$@"
